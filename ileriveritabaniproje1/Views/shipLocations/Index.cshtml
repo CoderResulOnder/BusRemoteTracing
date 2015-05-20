@@ -1,0 +1,877 @@
+﻿@model IEnumerable<ileriveritabaniproje1.Models.shipLocation>
+
+@{
+    ViewBag.Title = "Index";
+
+}
+
+
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body onload="getLocation()" style="color:aqua;background-color:black">
+    konumunuz&nbsp;: Latitude: <button id="demo1" value="buradasınız"></button>
+    Longitude <button id="demo2" value="buradasınız"></button>
+    size en yakın otobus için tıkla --><input type="button" value="Buradasın" id="Text1" placeholder="" />
+
+    <table border="1" align="center">
+        <tr>
+            <td>
+                aramak istediginiz konumu uygun sekilde giriniz:
+            </td>
+            <td>
+               latitude:<input type="text" id="txtara1" name="txtara1" />longitude:<input type="text" id="txtara2" name="txtara2" />
+                
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <input id="arama" type="submit" value="En Yakın Otobüsü Bul" />
+                <input id="tamami" type="submit" value="bütün otobüsleri getir" />
+            </td>
+            <td>
+                @Html.ActionLink("Sayfayı yenile", "index", "shipLocations")
+
+            </td>
+        </tr>
+    </table>
+
+
+    <script>
+        // burası tarayıcı konumuna gore sızın bukundugunuz konumu bulmaya yarayan kısım
+        var x = document.getElementById("demo1");
+        var y = document.getElementById("demo2");
+        var texta = document.getElementById("Text1");
+        function getLocation() {
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+            } else {
+                x.innerHTML = "Konumunuz Bulunamıyor";
+            }
+        }
+
+        function showPosition(position) {
+            x.innerHTML = position.coords.latitude;
+            y.innerHTML = position.coords.longitude;
+
+            var kordinat = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+            texta.value= kordinat;
+        }
+
+    </script>
+
+    <table>
+        <tr>
+            <td valign="top">
+                @Html.TextBox("txtSearch1", null, new { @placeholder = "search a bus" })
+                @Html.TextBox("txtSearch2", null, new { @placeholder = "adı girilen bir otobuse en yakın otobusleri ara" })
+                <ol type="1">
+                    <li>
+                        @Html.TextBox("txt1", null, new { @placeholder = "search a bus" })
+
+                    </li>
+                    <li>
+
+                        @Html.TextBox("txt2", null, new { @placeholder = "search a distance" })
+                    </li>
+                </ol>
+                <div id="myData">
+                    <table border="1">
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td style="color:aqua;background-color:black">@item.locationName</td>
+                                <td>@item.time</td>
+                            </tr>
+
+                        }
+                    </table>
+                </div>
+            </td>
+            <td valign="top">
+                <div id="googleMap" style="width:1000px;height:500px"></div>
+            </td>
+        </tr>
+    </table>
+
+
+
+
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+
+    @*<script src="~/Scripts/jquery.validate.unobtrusive.js"></script>*@
+
+
+    <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDY0kkJiTPVd2U7aTOAwhc9ySH6oHxOIYM&sensor=false"></script>
+
+    <script type="text/javascript">
+
+    //-*************************************************************************************************
+
+
+
+
+    //***************************************************************************************
+
+    $(document).ready(function () {
+        var gmarkers = [];
+        var map;
+
+        function initialize() {
+
+            var mapProp = {
+                //bu kısımdacanakkale ye zum yapılan kısım
+                center: new google.maps.LatLng(40.106174, 26.410389), //Turkey
+                zoom: 14,
+                mapTypeId: google.maps.MapTypeId.SATELLITE
+            };
+
+
+
+
+            map = new google.maps.Map(document.getElementById("googleMap"), mapProp);
+
+        }
+
+        google.maps.event.addDomListener(window, 'load', initialize);
+
+
+
+        $("#arama").click(function () {
+            var deger = $("#txtara1").val();
+            var deger1 = $("#txtara2").val();
+            deger = "(" +deger+ "," +deger1+ ")";
+
+            for (i = 0; i < gmarkers.length; i++) {
+                gmarkers[i].setMap(null);
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("ara", "shipLocations")', //"../Map/Search"
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ "giden": deger }),
+                dataType: "json",
+                error: function (q, status, err) { console.log(q, status, err); },
+                success: function (data) {
+                    //alert('success');
+                    var table = "";
+
+                    table = "<table class='table' ><tbody>";
+
+
+                    //*********************************
+                    //bulundugun konumun marker ını haritaya ekleme kısmı
+                    getLocation();
+
+                    function getLocation() {
+
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(showPosition);
+                        } else {
+
+                        }
+                    }
+
+                    function showPosition(position) {
+                        var latlng2 = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                        var marker2 = new google.maps.Marker({
+                            position: latlng2,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: "buradasın"
+
+                        });
+
+                        contentString = "buradasın";
+                        var infowindow2 = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+
+                        google.maps.event.addListener(marker2, 'click', function () {
+                            infowindow2.open(map, marker2);
+                        });
+
+                        gmarkers.push(marker2);
+
+
+
+
+                    }
+
+                    //***********************************
+
+                    //*********************************
+                    //yeni girilen konumun marker ını haritaya ekleme kısmı
+
+                   
+                    
+                    //var yeni1 = $("txtarama1").val;
+                    //var  yeni2 = parseFloat(document.getElementById("txtara2").value);
+                    //var latlng3 = new google.maps.LatLng(yeni1,yeni2);
+                    //var marker3 = new google.maps.Marker({
+                    //    position: latlng3,
+                    //    icon: "../pinkball.png",
+                    //    map: map,
+                    //    title: "aradıgın yeni konum"
+
+                    //});
+
+                    //contentString = "aradıgın yeni konum";
+                    //var infowindow3 = new google.maps.InfoWindow({
+                    //    content: contentString
+                    //});
+
+
+                    //google.maps.event.addListener(marker3, 'click', function () {
+                    //    infowindow3.open(map, marker3);
+                    //});
+
+                    //gmarkers.push(marker3);
+
+
+                    //***********************************
+
+                    $.each(data, function (index, value) {
+                        console.log(value);
+                        table += "";
+                        var latlng = new google.maps.LatLng(value.lng, value.lat);
+                        var marker = new google.maps.Marker({
+                            position: latlng,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: value.name
+
+                        });
+
+                        //**********************************
+                        contentString = value.name;
+                        var infowindow = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+
+                        google.maps.event.addListener(marker, 'click', function () {
+                            infowindow.open(map, marker);
+                        });
+
+                        //**********************************
+
+
+
+                        gmarkers.push(marker);
+
+
+                        //**************************
+
+
+                        function getLocation() {
+
+                            if (navigator.geolocation) {
+                                navigator.geolocation.getCurrentPosition(showPosition);
+                            } else {
+                                x.innerHTML = "Konumunuz Bulunamıyor";
+                            }
+                        }
+
+                        function showPosition(position) {
+                            x.innerHTML = position.coords.latitude;
+                            y.innerHTML = position.coords.longitude;
+                            var kordinat = null;
+                            kordinat = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+
+
+
+
+
+                            var marker1 = new google.maps.Marker({
+                                position: kordinat,
+                                //icon: "../pinkball.png",
+                                map: map,
+                                title: "buradasın"
+                            });
+
+                            gmarkers.push(marker1);
+                        }
+                        //--------------------
+
+
+
+
+
+                        table += "<tr><td>" + value.name + "</td></tr>";
+                    });
+                    table += "</tbody></table>";
+                    $("#myData").html(table);
+
+                    if (x == "") {
+                        for (j = 0; j < gmarkers.length; j++) {
+                            gmarkers[j].setMap(null);
+                        }
+                    }
+                }
+            });
+        });
+
+
+
+
+
+        $("#Text1").click(function () {
+
+            var deger = $("#Text1").val();
+
+
+            for (i = 0; i < gmarkers.length; i++) {
+                gmarkers[i].setMap(null);
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("ara", "shipLocations")', //"../Map/Search"
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ "giden": deger }),
+                dataType: "json",
+                error: function (q, status, err) { console.log(q, status, err); },
+                success: function (data) {
+                    //alert('success');
+                    var table = "";
+
+                    table = "<table class='table' ><tbody>";
+
+
+                    //*********************************
+                    //bulundugun konumun marker ını haritaya ekleme kısmı
+                    getLocation();
+
+                    function getLocation() {
+
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(showPosition);
+                        } else {
+
+                        }
+                    }
+
+                    function showPosition(position) {
+                        var latlng2 = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                        var marker2 = new google.maps.Marker({
+                            position: latlng2,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: "buradasın"
+
+                        });
+
+                        contentString = "buradasın";
+                        var infowindow2 = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+
+                        google.maps.event.addListener(marker2, 'click', function () {
+                            infowindow2.open(map, marker2);
+                        });
+
+                        gmarkers.push(marker2);
+
+
+
+
+                    }
+
+                    //***********************************
+
+                    //*********************************
+                    //yeni girilen konumun marker ını haritaya ekleme kısmı
+                     
+                   
+                        //var latlng3 = new google.maps.LatLng(xx,yy);
+                        //var marker3 = new google.maps.Marker({
+                        //    position: latlng3,
+                        //    //icon: "../pinkball.png",
+                        //    map: map,
+                        //    title: "aradıgın yeni konum"
+
+                        //});
+
+                        //contentString = "aradıgın yeni konum";
+                        //var infowindow3 = new google.maps.InfoWindow({
+                        //    content: contentString
+                        //});
+
+
+                        //google.maps.event.addListener(marker3, 'click', function () {
+                        //    infowindow3.open(map, marker3);
+                        //});
+
+                        //gmarkers.push(marker2);
+                    
+
+                    //***********************************
+
+                    $.each(data, function (index, value) {
+                        console.log(value);
+                        table += "";
+                        var latlng = new google.maps.LatLng(value.lng, value.lat);
+                        var marker = new google.maps.Marker({
+                            position: latlng,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: value.name
+
+                        });
+
+                        //**********************************
+                        contentString = value.name;
+                        var infowindow = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+
+                        google.maps.event.addListener(marker, 'click', function () {
+                            infowindow.open(map, marker);
+                        });
+
+                        //**********************************
+
+
+
+                        gmarkers.push(marker);
+
+
+                        //**************************
+
+
+                        function getLocation() {
+
+                            if (navigator.geolocation) {
+                                navigator.geolocation.getCurrentPosition(showPosition);
+                            } else {
+                                x.innerHTML = "Konumunuz Bulunamıyor";
+                            }
+                        }
+
+                        function showPosition(position) {
+                            x.innerHTML = position.coords.latitude;
+                            y.innerHTML = position.coords.longitude;
+                            var kordinat = null;
+                            kordinat = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+
+
+
+
+                            
+                            var marker1 = new google.maps.Marker({
+                                position: kordinat,
+                                //icon: "../pinkball.png",
+                                map: map,
+                                title: "buradasın"
+                            });
+
+                            gmarkers.push(marker1);
+                            }
+                            //--------------------
+
+
+
+
+
+                        table += "<tr><td>" + value.name + "</td></tr>";
+                    });
+                    table += "</tbody></table>";
+                    $("#myData").html(table);
+
+                    if (x == "") {
+                        for (j = 0; j < gmarkers.length; j++) {
+                            gmarkers[j].setMap(null);
+                        }
+                    }
+                }
+            });
+        });
+        $("#tamami").click(function () {
+
+            for (i = 0; i < gmarkers.length; i++) {
+                gmarkers[i].setMap(null);
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("ara1", "shipLocations")', //"../Map/Search"
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({}),
+                dataType: "json",
+                error: function (q, status, err) { console.log(q, status, err); },
+                success: function (data) {
+                    //alert('success');
+                    var table = "";
+
+                    table = "<table class='table' ><tbody>";
+
+                    $.each(data, function (index, value) {
+                        console.log(value);
+                        table += "";
+                        var latlng = new google.maps.LatLng(value.lng, value.lat);
+                        var marker = new google.maps.Marker({
+                            position: latlng,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: value.name
+                        });
+                        //**********************************
+                        contentString = value.name;
+                        var infowindow = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+
+                        google.maps.event.addListener(marker, 'click', function () {
+                            infowindow.open(map, marker);
+                        });
+
+                        //**********************************
+                        gmarkers.push(marker);
+                        table += "<tr><td>" + value.name + "</td></tr>";
+                    });
+                    table += "</tbody></table>";
+                    $("#myData").html(table);
+
+                    if (x == "") {
+                        for (j = 0; j < gmarkers.length; j++) {
+                            gmarkers[j].setMap(null);
+                        }
+                    }
+                }
+            });
+        });
+
+
+        $("#txtSearch2").keyup(function () {
+
+
+            var x = $("#txtSearch2").val();
+
+            for (i = 0; i < gmarkers.length; i++) {
+                gmarkers[i].setMap(null);
+            }
+
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("nameDistance", "shipLocations")', //"../Map/Search"
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ "name": x }),
+                dataType: "json",
+                error: function (q, status, err) { console.log(q, status, err); },
+                success: function (data) {
+                    //alert('success');
+                    var table = "";
+
+                    table = "<table class='table' ><tbody>";
+
+                    $.each(data, function (index, value) {
+                        console.log(value);
+                        table += "";
+
+                         
+                        var latlng1 = new google.maps.LatLng(value.lng1, value.lat1);
+                        var marker1 = new google.maps.Marker({
+                            position: latlng1,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: value.name1
+                        });
+                        var contentString1 = "en yakın->>"+value.name2;
+                        var infowindow1 = new google.maps.InfoWindow({
+                            content: contentString1
+                        });
+
+                        google.maps.event.addListener(marker1, 'click', function () {
+                            infowindow1.open(map, marker1);
+                        });
+                        gmarkers.push(marker1);
+                        //*********************************
+                        var latlng = new google.maps.LatLng(value.lng, value.lat);
+                        var marker = new google.maps.Marker({
+                            position: latlng,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: value.name2
+                        });
+                        //**********************************
+                        contentString = value.name2;
+                        var infowindow = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+
+                        google.maps.event.addListener(marker, 'click', function () {
+                            infowindow.open(map, marker);
+                        });
+
+                        //**********************************
+                        gmarkers.push(marker);
+                        table += "<tr><td>" + value.name1+"en yakın-->"+value.name2 /*"mesafe"+value.uzaklik*/+"</td></tr>";
+                    });
+                    table += "</tbody></table>";
+                    $("#myData").html(table);
+
+                    if (x == "") {
+                        for (j = 0; j < gmarkers.length; j++) {
+                            gmarkers[j].setMap(null);
+                        }
+                    }
+                }
+            });
+        });
+
+
+        $("#txt1").keyup(function () {
+
+
+            var x = $("#txt1").val();
+            var y = $("#txt2").val();
+            for (i = 0; i < gmarkers.length; i++) {
+                gmarkers[i].setMap(null);
+            }
+
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Distance", "shipLocations")', //"../Map/Search"
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ "name": x ,"distance":y }),
+                dataType: "json",
+                error: function (q, status, err) { console.log(q, status, err); },
+                success: function (data) {
+                    //alert('success');
+                    var table = "";
+
+                    table = "<table class='table' ><tbody>";
+
+                    $.each(data, function (index, value) {
+                        console.log(value);
+                        table += "";
+                        //********************************************************************************
+                        var latlng1 = new google.maps.LatLng(value.lng1, value.lat1);
+                        
+
+
+                        var marker1 = new google.maps.Marker({
+                            position: latlng1,
+                            map: map,
+                            title: value.name1,
+                            draggable: true
+                           
+                        });
+                        var contentString1 = "bu otobuse "+ y +" km den daha yakın otobusleri bulma işlemi";
+                        var infowindow1 = new google.maps.InfoWindow({
+                            content: contentString1
+                        });
+
+                        google.maps.event.addListener(marker1, 'click', function () {
+                            infowindow1.open(map, marker1);
+                        });
+                        gmarkers.push(marker1);
+
+
+                        //**********************************************************************
+
+
+
+                        var latlng = new google.maps.LatLng(value.lng, value.lat);
+                        var marker = new google.maps.Marker({
+                            position: latlng,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: value.name
+                        });
+                        //**********************************
+                        contentString = value.name;
+                        var infowindow = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+
+                        google.maps.event.addListener(marker, 'click', function () {
+                            infowindow.open(map, marker);
+                        });
+
+                        //**********************************
+                        gmarkers.push(marker);
+                        table += "<tr><td>" + value.name + "</td></tr>";
+                    });
+                    table += "</tbody></table>";
+                    $("#myData").html(table);
+
+                    if (x == "") {
+                        for (j = 0; j < gmarkers.length; j++) {
+                            gmarkers[j].setMap(null);
+                        }
+                    }
+                }
+            });
+        });
+
+        $("#txt2").keyup(function () {
+
+
+            var x = $("#txt1").val();
+            var y = $("#txt2").val();
+            for (i = 0; i < gmarkers.length; i++) {
+                gmarkers[i].setMap(null);
+            }
+
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Distance", "shipLocations")', //"../Map/Search"
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ "name": x, "distance": y }),
+                dataType: "json",
+                error: function (q, status, err) { console.log(q, status, err); },
+                success: function (data) {
+                    //alert('success');
+                    var table = "";
+
+                    table = "<table class='table' ><tbody>";
+
+                    $.each(data, function (index, value) {
+                        console.log(value);
+                        table += "";
+
+
+
+                        //********************************************************************************
+                        var latlng1 = new google.maps.LatLng(value.lng1, value.lat1);
+                        var marker1 = new google.maps.Marker({
+                            position: latlng1,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: value.name1
+                        });
+                        var contentString1 = "bu otobuse " + y + " km den daha yakın otobusleri bulma işlemi";
+                        var infowindow1 = new google.maps.InfoWindow({
+                            content: contentString1
+                        });
+
+                        google.maps.event.addListener(marker1, 'click', function () {
+                            infowindow1.open(map, marker1);
+                        });
+                        gmarkers.push(marker1);
+
+
+                        //**********************************************************************
+
+
+                        var latlng = new google.maps.LatLng(value.lng, value.lat);
+                        var marker = new google.maps.Marker({
+                            position: latlng,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: value.name
+                        });
+                        //**********************************
+                        contentString = value.name;
+                        var infowindow = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+
+                        google.maps.event.addListener(marker, 'click', function () {
+                            infowindow.open(map, marker);
+                        });
+
+                        //**********************************
+                        gmarkers.push(marker);
+                        table += "<tr><td>" + value.name + "</td></tr>";
+                    });
+                    table += "</tbody></table>";
+                    $("#myData").html(table);
+
+                    if (x == "") {
+                        for (j = 0; j < gmarkers.length; j++) {
+                            gmarkers[j].setMap(null);
+                        }
+                    }
+                }
+            });
+        });
+
+
+
+
+
+        $("#txtSearch1").keyup(function () {
+
+
+            var x = $("#txtSearch1").val();
+
+            for (i = 0; i < gmarkers.length; i++) {
+                gmarkers[i].setMap(null);
+            }
+
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Search", "shipLocations")', //"../Map/Search"
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ "Location": x }),
+                dataType: "json",
+                error: function (q, status, err) { console.log(q, status, err); },
+                success: function (data) {
+                    //alert('success');
+                    var table = "";
+
+                    table = "<table class='table' ><tbody>";
+
+                    $.each(data, function (index, value) {
+                        console.log(value);
+                        table += "";
+                        var latlng = new google.maps.LatLng(value.lng, value.lat);
+                        var marker = new google.maps.Marker({
+                            position: latlng,
+                            //icon: "../pinkball.png",
+                            map: map,
+                            title: value.name
+                        });
+                        //**********************************
+                        contentString = value.name;
+                        var infowindow = new google.maps.InfoWindow({
+                            content: contentString
+                        });
+
+
+                        google.maps.event.addListener(marker, 'click', function () {
+                            infowindow.open(map, marker);
+                        });
+
+                        //**********************************
+                        gmarkers.push(marker);
+                        table += "<tr><td>" + value.name + "</td></tr>";
+                    });
+                    table += "</tbody></table>";
+                    $("#myData").html(table);
+
+                    if (x == "") {
+                        for (j = 0; j < gmarkers.length; j++) {
+                            gmarkers[j].setMap(null);
+                        }
+                    }
+                }
+            });
+        });
+    });
+    </script>
+
+</body>

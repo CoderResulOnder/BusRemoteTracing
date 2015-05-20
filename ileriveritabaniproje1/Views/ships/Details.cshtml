@@ -1,0 +1,66 @@
+﻿@model ileriveritabaniproje1.Models.ship
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>ship</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ShipName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ShipName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.capacity)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.capacity)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.color)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.color)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.task)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.task)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.type_of_ship)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.type_of_ship)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ship_size)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ship_size)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

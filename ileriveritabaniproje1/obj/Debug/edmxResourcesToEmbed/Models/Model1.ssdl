@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="LİmanYatTekneTakipSistemiModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+  <EntityType Name="shipLocations">
+    <Key>
+      <PropertyRef Name="location_id" />
+    </Key>
+    <Property Name="location_id" Type="int" Nullable="false" />
+    <Property Name="locationName" Type="nchar" MaxLength="50" />
+    <Property Name="location" Type="geography" />
+    <Property Name="image" Type="varbinary(max)" />
+    <Property Name="time" Type="datetime" />
+    <Property Name="ship_id" Type="int" />
+  </EntityType>
+  <EntityType Name="ships">
+    <Key>
+      <PropertyRef Name="id" />
+    </Key>
+    <Property Name="id" Type="int" Nullable="false" />
+    <Property Name="ShipName" Type="nchar" MaxLength="50" />
+    <Property Name="capacity" Type="nchar" MaxLength="10" />
+    <Property Name="color" Type="nchar" MaxLength="50" />
+    <Property Name="task" Type="nchar" MaxLength="10" />
+    <Property Name="type_of_ship" Type="nchar" MaxLength="50" />
+    <Property Name="ship_size" Type="nchar" MaxLength="50" />
+  </EntityType>
+  <EntityType Name="sysdiagrams">
+    <Key>
+      <PropertyRef Name="diagram_id" />
+    </Key>
+    <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
+    <Property Name="principal_id" Type="int" Nullable="false" />
+    <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="version" Type="int" />
+    <Property Name="definition" Type="varbinary(max)" />
+  </EntityType>
+  <Association Name="FK_shipLocation_ship">
+    <End Role="ships" Type="Self.ships" Multiplicity="0..1" />
+    <End Role="shipLocations" Type="Self.shipLocations" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="ships">
+        <PropertyRef Name="id" />
+      </Principal>
+      <Dependent Role="shipLocations">
+        <PropertyRef Name="ship_id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="LİmanYatTekneTakipSistemiModelStoreContainer">
+    <EntitySet Name="shipLocations" EntityType="Self.shipLocations" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="ships" EntityType="Self.ships" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
+    <AssociationSet Name="FK_shipLocation_ship" Association="Self.FK_shipLocation_ship">
+      <End Role="ships" EntitySet="ships" />
+      <End Role="shipLocations" EntitySet="shipLocations" />
+    </AssociationSet>
+  </EntityContainer>
+</Schema>
